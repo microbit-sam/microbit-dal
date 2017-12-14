@@ -141,6 +141,8 @@ void MicroBitPartialFlashService::writeEvent(MicroBitEvent e)
     {
         uint32_t error = 0xdeadbeef;
         flash.flash_burn((uint32_t *)0x36000, &error, sizeof(error));
+        flash.flash_burn((uint32_t *)0x36010, &error, sizeof(error));
+        flash.flash_burn((uint32_t *)0x36020, &error, sizeof(error));
     }
 
     // Flash Pointer
