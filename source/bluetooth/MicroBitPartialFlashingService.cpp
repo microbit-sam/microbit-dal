@@ -36,10 +36,10 @@ uint8_t MicroBitPartialFlashService::writeStatus = 0;  // access static var
 uint8_t *MicroBitPartialFlashService::data = 0;         // access static var
 uint32_t MicroBitPartialFlashService::baseAddress = 0x30000;
 
-int packet = 0;
+uint8_t packet = 0;
 
-int packetNum = 0; 
-int packetCount = 0; 
+uint32_t packetNum = 0; 
+uint32_t packetCount = 0; 
 
 /**
   * Constructor.
@@ -123,46 +123,65 @@ void MicroBitPartialFlashService::onDataWritten(const GattWriteCallbackParams *p
   * Write Event 
   * Used the write data to the flash outside of the BLE ISR
   */
+
+uint32_t block[16];
+uint8_t  packetBlock = 0;
+uint32_t offset;
+uint32_t *blockFlashPointer;
+uint32_t *flashPointer;
+MicroBitFlash flash;
 void MicroBitPartialFlashService::writeEvent(MicroBitEvent e)
 {
+    // If dropped packet /////////////////////////////////
+    packetCount++;
+    packetNum = (data[18] << 8) | data[19];
     
-    uint8_t len = e.value;
-
-
-    // Instance of MBFlash
-    MicroBitFlash flash;
-
-    // Calculate Offset
-    uint32_t offset       = (data[16] << 8) | data[17];
-    packetNum             = (data[18] << 8) | data[19];
-
-    // If dropped packet
-    if(packetNum != ++packetCount)
+    if(packetNum != packetCount)
     {
         uint32_t error = 0xdeadbeef;
         flash.flash_burn((uint32_t *)0x36000, &error, sizeof(error));
-        flash.flash_burn((uint32_t *)0x36010, &error, sizeof(error));
-        flash.flash_burn((uint32_t *)0x36020, &error, sizeof(error));
+        flash.flash_burn((uint32_t *)0x36010, &packetNum, sizeof(error));
+        flash.flash_burn((uint32_t *)0x36020, &packetCount, sizeof(error));
     }
+    //////////////////////////////////////////////////////
+    
+    // If crossing page boundary erase ///////////////////
+    // Calculate Offset
+    offset       = (data[16] << 8) | data[17];
 
-    // Flash Pointer
-    uint32_t *flashPointer   = (uint32_t *) (baseAddress + offset);
+    // Flash Pointer 
+    flashPointer   = (uint32_t *) (baseAddress + offset);
 
     // If the pointer is on a page boundary erase the page
     if(!((uint32_t)flashPointer % 0x400))
         flash.erase_page(flashPointer);
+    ////////////////////////////////////////////////////
 
-    // Write data
-    uint32_t block[4];
+    // Write data /////////////////////////////////////
     for(int x = 0; x < 4; x++)
-        block[x] = data[(4*x)] | data[(4*x)+1] << 8 | data[(4*x)+2] << 16 | data[(4*x)+3] << 24;
+        block[(4*packetBlock) + x] = data[(4*x)] | data[(4*x)+1] << 8 | data[(4*x)+2] << 16 | data[(4*x)+3] << 24;
+    //////////////////////////////////////////////////
+    packetBlock++;
 
-    // Create a pointer to the data block
-    uint32_t *blockPointer;
-    blockPointer = block;
+    // Setting Up Block /////////////////////////////////
+    // If packetBlock = 0 set up block 
+    if(packetBlock == 0)
+    {
+        blockFlashPointer = flashPointer;
+    }
+    
+    // Flashing Block ///////////////////////////////////
+    // If packetBlock == 4 OR offset = 0xFFFF flash
+    if(packetBlock == 4 || offset == 0xFFFF) 
+    {
 
-    // Burn the data to flash
-    flash.flash_burn(flashPointer, blockPointer, 4);
+        // Create a pointer to the data block
+        uint32_t *blockDataPointer;
+        blockDataPointer = block;
+
+        // Burn the data to flash
+        flash.flash_burn(blockFlashPointer, blockDataPointer, 16);
+    }
 
 }
 
