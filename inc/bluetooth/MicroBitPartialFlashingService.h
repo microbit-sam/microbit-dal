@@ -39,14 +39,14 @@ DEALINGS IN THE SOFTWARE.
 #include "EventModel.h"
 
 // UUIDs for our service and characteristics
-extern const uint8_t  MicroBitPartialFlashServiceUUID[];
-extern const uint8_t  MicroBitPartialFlashServiceCharacteristicUUID[];
+extern const uint8_t  MicroBitPartialFlashingServiceUUID[];
+extern const uint8_t  MicroBitPartialFlashingServiceCharacteristicUUID[];
 
 /**
   * Class definition for the custom MicroBit Partial Flash Service.
   * Provides a BLE service to remotely read the memory map and flash the PXT program.
   */
-class MicroBitPartialFlashService
+class MicroBitPartialFlashingService
 {
     public:
     // Create MemoryMap to store SD/DAL/PXT region info
@@ -58,7 +58,7 @@ class MicroBitPartialFlashService
       * @param _ble The instance of a BLE device that we're running on.
       * @param _memoryMap An instance of MicroBiteMemoryMap to interface with.
       */
-    MicroBitPartialFlashService(BLEDevice &_ble, EventModel &_messageBus);
+    MicroBitPartialFlashingService(BLEDevice &_ble, EventModel &_messageBus);
 
     /**
       * Callback. Invoked when any of our attributes are written via BLE.
@@ -80,11 +80,8 @@ class MicroBitPartialFlashService
       */
     void writeEvent(MicroBitEvent e);
 
-    // Hold incoming flash data
-    uint8_t *data;
-
-    // The base address to write to. Bit masked:  0xFFFF0000 & region.endAddress
-    uint32_t baseAddress = 0x30000;
+    // The base address to write to. Bit masked:  (0xFFFF0000 & region.endAddress) >> 16
+    uint8_t baseAddress = 0x3;
 
     // Handles to access each characteristic when they are held by Soft Device.
     GattAttribute::Handle_t partialFlashCharacteristicHandle;

@@ -44,11 +44,12 @@ MicroBitMemoryMap::MicroBitMemoryMap()
 {
 
     //read our data!
-    memcpy(&memoryMapStore, flashBlockPointer, sizeof(memoryMapStore));
+    uint32_t *flashPointer = (uint32_t *)MEMORY_MAP_PAGE;
+    memcpy(&memoryMapStore, flashPointer, sizeof(memoryMapStore));
 
     //if we haven't used flash before, we need to configure it
     // Rebuild map everytime
-    if(memoryMapStore.magic != MICROBIT_MEMORY_MAP_MAGIC || 1)
+    if(memoryMapStore.magic != MICROBIT_MEMORY_MAP_MAGIC)
     {
 
         // SD
@@ -67,7 +68,7 @@ MicroBitMemoryMap::MicroBitMemoryMap()
         memoryMapStore.magic = MICROBIT_MEMORY_MAP_MAGIC;
 
         // Update Flash
-        // updateFlash(&memoryMapStore);
+        updateFlash(&memoryMapStore);
 
     }
 
@@ -129,8 +130,7 @@ int MicroBitMemoryMap::updateRegion(Region region)
 void MicroBitMemoryMap::updateFlash(MemoryMapStore *store)
 {
   //calculate our various offsets
-  uint32_t pg_size = NRF_FICR->CODEPAGESIZE;
-  uint32_t *flashPointer = (uint32_t *)(pg_size * (NRF_FICR->CODESIZE - MICROBIT_MEMORY_MAP_PAGE_OFFSET));
+  uint32_t *flashPointer = (uint32_t *)MEMORY_MAP_PAGE;
   int wordsToWrite = sizeof(MemoryMapStore) / 4;
 
   MicroBitFlash flash;

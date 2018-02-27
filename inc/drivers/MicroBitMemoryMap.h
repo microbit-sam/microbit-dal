@@ -32,7 +32,6 @@ DEALINGS IN THE SOFTWARE.
 #include "ErrorNo.h"
 
 #define MICROBIT_MEMORY_MAP_MAGIC       0xCA6E
-#define MICROBIT_MEMORY_MAP_PAGE_OFFSET 21
 
 #define NUMBER_OF_REGIONS 3
 
@@ -74,10 +73,6 @@ class MicroBitMemoryMap
         uint32_t magic;
         Region memoryMap[3];
     };
-
-    uint32_t pg_size = NRF_FICR->CODEPAGESIZE;
-    uint32_t pg_num  = NRF_FICR->CODESIZE - MICROBIT_MEMORY_MAP_PAGE_OFFSET;
-    uint32_t *flashBlockPointer = (uint32_t *)(pg_size * pg_num);
 
     uint8_t regionCount = 0;
 

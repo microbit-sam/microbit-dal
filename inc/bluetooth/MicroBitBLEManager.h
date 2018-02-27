@@ -147,7 +147,7 @@ class MicroBitBLEManager : MicroBitComponent
       * @param enableBonding If true, the security manager enabled bonding.
       *
       * @code
-      * bleManager.init(uBit.getName(), uBit.getSerial(), uBit.messageBus, &uBit.mMap, true);
+      * bleManager.init(uBit.getName(), uBit.getSerial(), uBit.messageBus);
       * @endcode
       */
     void init(ManagedString deviceName, ManagedString serialNumber, EventModel &messageBus, bool enableBonding);

@@ -24,7 +24,6 @@
     "inc/types",
     "inc/drivers",
     "inc/bluetooth",
-    "inc/platform",
-    "inc/ext"
+    "inc/platform"
   ]
 }

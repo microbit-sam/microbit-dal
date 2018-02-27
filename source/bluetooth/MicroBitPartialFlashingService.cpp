@@ -56,12 +56,12 @@ uint16_t offset   = 0;
   * @param _ble The instance of a BLE device that we're running on.
   * @param _messageBus The instance of a EventModel that we're running on.
   */
-MicroBitPartialFlashService::MicroBitPartialFlashService(BLEDevice &_ble, EventModel &_messageBus) :
+MicroBitPartialFlashingService::MicroBitPartialFlashingService(BLEDevice &_ble, EventModel &_messageBus) :
         ble(_ble), messageBus(_messageBus), memoryMap()
 {
     // Set up partial flashing characteristic
     uint8_t initCharacteristicValue = 0x00;
-    GattCharacteristic partialFlashCharacteristic(MicroBitPartialFlashServiceCharacteristicUUID, &initCharacteristicValue, sizeof(initCharacteristicValue),
+    GattCharacteristic partialFlashCharacteristic(MicroBitPartialFlashingServiceCharacteristicUUID, &initCharacteristicValue, sizeof(initCharacteristicValue),
     20, GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_WRITE | GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_WRITE_WITHOUT_RESPONSE | GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_NOTIFY);
 
     // Set default security requirements
@@ -69,15 +69,15 @@ MicroBitPartialFlashService::MicroBitPartialFlashService(BLEDevice &_ble, EventM
 
     // Create Partial Flashing Service
     GattCharacteristic *characteristics[] = {&partialFlashCharacteristic};
-    GattService         service(MicroBitPartialFlashServiceUUID, characteristics, sizeof(characteristics) / sizeof(GattCharacteristic*) );
+    GattService         service(MicroBitPartialFlashingServiceUUID, characteristics, sizeof(characteristics) / sizeof(GattCharacteristic*) );
     ble.addService(service);
 
     // Get characteristic handle for future use
     partialFlashCharacteristicHandle = partialFlashCharacteristic.getValueHandle();
-    ble.onDataWritten(this, &MicroBitPartialFlashService::onDataWritten);
+    ble.gattServer().onDataWritten(this, &MicroBitPartialFlashingService::onDataWritten);
 
     // Set up listener for SD writing
-    messageBus.listen(MICROBIT_ID_PFLASH_NOTIFICATION, MICROBIT_EVT_ANY, this, &MicroBitPartialFlashService::writeEvent);
+    messageBus.listen(MICROBIT_ID_PFLASH_NOTIFICATION, MICROBIT_EVT_ANY, this, &MicroBitPartialFlashingService::writeEvent);
 
 }
 
@@ -85,10 +85,10 @@ MicroBitPartialFlashService::MicroBitPartialFlashService(BLEDevice &_ble, EventM
 /**
   * Callback. Invoked when any of our attributes are written via BLE.
   */
-void MicroBitPartialFlashService::onDataWritten(const GattWriteCallbackParams *params)
+void MicroBitPartialFlashingService::onDataWritten(const GattWriteCallbackParams *params)
 {
     // Get data from BLE callback params
-    data = (uint8_t *)params->data;
+    uint8_t *data = (uint8_t *)params->data;
 
     if(params->handle == partialFlashCharacteristicHandle && params->len > 0)
     {
@@ -122,7 +122,7 @@ void MicroBitPartialFlashService::onDataWritten(const GattWriteCallbackParams *p
           ble.gattServer().notify(partialFlashCharacteristicHandle, (const uint8_t *)buffer, sizeof(buffer));
 
           // Set offset for writing
-          baseAddress = memoryMap.memoryMapStore.memoryMap[data[1]].startAddress & 0xFFFF0000; // Offsets are 16 bit
+          baseAddress = (memoryMap.memoryMapStore.memoryMap[data[1]].startAddress & 0xFFFF0000) >> 16; // Offsets are 16 bit
           break;
         }
         case FLASH_DATA:
@@ -133,8 +133,17 @@ void MicroBitPartialFlashService::onDataWritten(const GattWriteCallbackParams *p
         }
         case END_OF_TRANSMISSION:
         {
-          // Write final packet and corrupt previous embedded source
-          MicroBitEvent evt(MICROBIT_ID_PFLASH_NOTIFICATION, 0 ,CREATE_AND_FIRE);
+          /* Start of embedded source isn't always on a page border so client must
+           * inform the micro:bit that it's the last packet.
+           * - Write final packet
+           * The END_OF_TRANSMISSION packet contains no data. Write any data left in the buffer.
+           */
+           MicroBitEvent evt(MICROBIT_ID_PFLASH_NOTIFICATION, 0 ,CREATE_AND_FIRE);
+           /* - Corrupt previous embedded source
+            */
+           /* - Complete checksum
+           */
+          break;
         }
     }
   }
@@ -146,7 +155,7 @@ void MicroBitPartialFlashService::onDataWritten(const GattWriteCallbackParams *p
   * @param data - A pointer to the data to process
   *
   */
-void MicroBitPartialFlashService::flashData(uint8_t *data)
+void MicroBitPartialFlashingService::flashData(uint8_t *data)
 {
         // Receive 16 bytes per packet
         // Buffer 8 packets - 32 uint32_t // 128 bytes per block
@@ -207,11 +216,11 @@ void MicroBitPartialFlashService::flashData(uint8_t *data)
   * Write Event
   * Used the write data to the flash outside of the BLE ISR
   */
-void MicroBitPartialFlashService::writeEvent(MicroBitEvent e)
+void MicroBitPartialFlashingService::writeEvent(MicroBitEvent e)
 {
 
     // Flash Pointer
-    uint32_t *flashPointer   = (uint32_t *) (baseAddress + offset);
+    uint32_t *flashPointer   = (uint32_t *) ((baseAddress << 16) + offset);
 
     // If the pointer is on a page boundary erase the page
     if(!((uint32_t)flashPointer % 0x400))
@@ -229,10 +238,10 @@ void MicroBitPartialFlashService::writeEvent(MicroBitEvent e)
     ble.gattServer().notify(partialFlashCharacteristicHandle, (const uint8_t *)flashNotificationBuffer, sizeof(flashNotificationBuffer));
 }
 
-const uint8_t  MicroBitPartialFlashServiceUUID[] = {
+const uint8_t  MicroBitPartialFlashingServiceUUID[] = {
     0xe9,0x7d,0xd9,0x1d,0x25,0x1d,0x47,0x0a,0xa0,0x62,0xfa,0x19,0x22,0xdf,0xa9,0xa8
 };
 
-const uint8_t  MicroBitPartialFlashServiceCharacteristicUUID[] = {
+const uint8_t  MicroBitPartialFlashingServiceCharacteristicUUID[] = {
     0xe9,0x7d,0x3b,0x10,0x25,0x1d,0x47,0x0a,0xa0,0x62,0xfa,0x19,0x22,0xdf,0xa9,0xa8
 };
