@@ -57,6 +57,7 @@ DEALINGS IN THE SOFTWARE.
 #include "MicroBitButtonService.h"
 #include "MicroBitIOPinService.h"
 #include "MicroBitTemperatureService.h"
+#include "MicroBitPartialFlashingService.h"
 #include "ExternalEvents.h"
 #include "MicroBitButton.h"
 #include "MicroBitStorage.h"
@@ -146,7 +147,7 @@ class MicroBitBLEManager : MicroBitComponent
       * @param enableBonding If true, the security manager enabled bonding.
       *
       * @code
-      * bleManager.init(uBit.getName(), uBit.getSerial(), uBit.messageBus, true);
+      * bleManager.init(uBit.getName(), uBit.getSerial(), uBit.messageBus);
       * @endcode
       */
     void init(ManagedString deviceName, ManagedString serialNumber, EventModel &messageBus, bool enableBonding);
@@ -220,7 +221,7 @@ class MicroBitBLEManager : MicroBitComponent
     void stopAdvertising();
 
     /**
-     * A member function used to defer writes to flash, in order to prevent a write collision with 
+     * A member function used to defer writes to flash, in order to prevent a write collision with
      * softdevice.
      * @param handle The handle offered by soft device during pairing.
      * */
@@ -289,8 +290,16 @@ class MicroBitBLEManager : MicroBitComponent
 	*/
     void showNameHistogram(MicroBitDisplay &display);
 
+
+    /**
+    * Displays pairing mode animation
+    *
+    * @param display The display instance used for displaying the histogram.
+    */
+    void showManagementModeAnimation(MicroBitDisplay &display);
+
     #define MICROBIT_BLE_DISCONNECT_AFTER_PAIRING_DELAY  500
-    unsigned long pairing_completed_at_time;   
+    unsigned long pairing_completed_at_time;
 
     int pairingStatus;
     ManagedString passKey;
