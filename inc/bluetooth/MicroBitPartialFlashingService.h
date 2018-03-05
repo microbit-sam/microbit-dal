@@ -32,6 +32,7 @@ DEALINGS IN THE SOFTWARE.
 #include "MicroBitMemoryMap.h"
 
 #include "MicroBitFlash.h"
+#include "MicroBitStorage.h"
 
 #include "MicroBitComponent.h"
 #include "MicroBitEvent.h"

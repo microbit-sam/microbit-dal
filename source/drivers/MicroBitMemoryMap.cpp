@@ -59,7 +59,10 @@ MicroBitMemoryMap::MicroBitMemoryMap()
         pushRegion(Region(0x01, 0x18000, FLASH_PROGRAM_END, 0x00)); // micro:bit Device Abstractation Layer
 
         // PXT
-        pushRegion(Region(0x02, FLASH_PROGRAM_END, 0x3e800, 0x00)); // micro:bit PXT
+        // PXT will be on the start of the next page
+        uint16_t padding = 0x400 - (FLASH_PROGRAM_END % 0x400);
+
+        pushRegion(Region(0x02, FLASH_PROGRAM_END + padding, 0x3e800, 0x00)); // micro:bit PXT
 
         // Find Hashes if PXT Built Program
         findHashes();
