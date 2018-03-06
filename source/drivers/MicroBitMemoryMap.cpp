@@ -47,7 +47,7 @@ MicroBitMemoryMap::MicroBitMemoryMap()
     uint32_t *flashPointer = (uint32_t *)MEMORY_MAP_PAGE;
     memcpy(&memoryMapStore, flashPointer, sizeof(memoryMapStore));
 
-    //if we haven't used flash before, we need to configure it
+    // If we haven't used flash before, we need to configure it
     // Rebuild map everytime
     if(memoryMapStore.magic != MICROBIT_MEMORY_MAP_MAGIC)
     {
@@ -60,9 +60,9 @@ MicroBitMemoryMap::MicroBitMemoryMap()
 
         // PXT
         // PXT will be on the start of the next page
-        uint16_t padding = 0x400 - (FLASH_PROGRAM_END % 0x400);
+        // uint16_t padding = 0x400 - (FLASH_PROGRAM_END % 0x400);
 
-        pushRegion(Region(0x02, FLASH_PROGRAM_END + padding, 0x3e800, 0x00)); // micro:bit PXT
+        pushRegion(Region(0x02, FLASH_PROGRAM_END, 0x3e800, 0x00)); // micro:bit PXT
 
         // Find Hashes if PXT Built Program
         findHashes();
@@ -71,7 +71,7 @@ MicroBitMemoryMap::MicroBitMemoryMap()
         memoryMapStore.magic = MICROBIT_MEMORY_MAP_MAGIC;
 
         // Update Flash
-        updateFlash(&memoryMapStore);
+        // updateFlash(&memoryMapStore);
 
     }
 
@@ -151,10 +151,9 @@ void MicroBitMemoryMap::findHashes()
     {
 
         uint32_t volatile *magicAddress  = (uint32_t *)(0x400 * x);
-        uint32_t magicValue = *magicAddress;
 
         // Check for first 32 bits of Magic
-        if(magicValue == 0x923b8e70)
+        if(*magicAddress == 0x923b8e70)
         {
             // Check remaining magic
             if(
