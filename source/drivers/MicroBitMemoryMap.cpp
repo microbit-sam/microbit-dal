@@ -132,12 +132,8 @@ int MicroBitMemoryMap::updateRegion(Region region)
   */
 void MicroBitMemoryMap::updateFlash(MemoryMapStore *store)
 {
-  //calculate our various offsets
-  uint32_t *flashPointer = (uint32_t *)MEMORY_MAP_PAGE;
-  int wordsToWrite = sizeof(MemoryMapStore) / 4;
-
   MicroBitFlash flash;
-  flash.flash_write(store, flashPointer, wordsToWrite);
+  flash.flash_write(store, (uint32_t *)MEMORY_MAP_PAGE, (sizeof(MemoryMapStore) / 4));
 }
 
 /*

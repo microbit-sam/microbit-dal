@@ -56,7 +56,7 @@ class MicroBitMemoryMap
             this->regionId = regionId;
             this->startAddress = startAddress;
             this->endAddress = endAddress;
-            memcpy( this->hash, &hash, sizeof(hash) );
+            memmove( this->hash, &hash, sizeof(hash) );
         }
 
         Region(){
