@@ -57,7 +57,7 @@ uint16_t offset   = 0;
   * @param _messageBus The instance of a EventModel that we're running on.
   */
 MicroBitPartialFlashingService::MicroBitPartialFlashingService(BLEDevice &_ble, EventModel &_messageBus) :
-        ble(_ble), messageBus(_messageBus), memoryMap()
+        ble(_ble), messageBus(_messageBus)
 {
     // Set up partial flashing characteristic
     uint8_t initCharacteristicValue = 0x00;
@@ -79,6 +79,10 @@ MicroBitPartialFlashingService::MicroBitPartialFlashingService(BLEDevice &_ble, 
     // Set up listener for SD writing
     messageBus.listen(MICROBIT_ID_PFLASH_NOTIFICATION, MICROBIT_EVT_ANY, this, &MicroBitPartialFlashingService::writeEvent);
 
+    // Set up Memory map
+    // This will create the Memory Map and store it in flash
+    MicroBitMemoryMap memoryMap;
+
 }
 
 
@@ -96,6 +100,9 @@ void MicroBitPartialFlashingService::onDataWritten(const GattWriteCallbackParams
       switch(data[0]){
         case REGION_INFO:
         {
+          // Create instance of Memory Map to return info
+          MicroBitMemoryMap memoryMap;
+
           uint8_t buffer[18];
           // Response:
           // Region and Region #

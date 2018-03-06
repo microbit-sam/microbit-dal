@@ -50,9 +50,6 @@ extern const uint8_t  MicroBitPartialFlashingServiceCharacteristicUUID[];
 class MicroBitPartialFlashingService
 {
     public:
-    // Create MemoryMap to store SD/DAL/PXT region info
-    MicroBitMemoryMap   memoryMap;
-
     /**
       * Constructor.
       * Create a representation of the Partial Flash Service

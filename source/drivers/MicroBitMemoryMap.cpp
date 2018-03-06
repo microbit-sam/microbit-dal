@@ -60,9 +60,8 @@ MicroBitMemoryMap::MicroBitMemoryMap()
 
         // PXT
         // PXT will be on the start of the next page
-        // uint16_t padding = 0x400 - (FLASH_PROGRAM_END % 0x400);
-
-        pushRegion(Region(0x02, FLASH_PROGRAM_END, 0x3e800, 0x00)); // micro:bit PXT
+        // padding to next page = 0x400 - (FLASH_PROGRAM_END % 0x400);
+        pushRegion(Region(0x02, FLASH_PROGRAM_END + (0x400 - (FLASH_PROGRAM_END % 0x400)), 0x3BBFF, 0x00)); // micro:bit PXT
 
         // Find Hashes if PXT Built Program
         findHashes();
@@ -71,7 +70,7 @@ MicroBitMemoryMap::MicroBitMemoryMap()
         memoryMapStore.magic = MICROBIT_MEMORY_MAP_MAGIC;
 
         // Update Flash
-        // updateFlash(&memoryMapStore);
+        updateFlash(&memoryMapStore);
 
     }
 
@@ -133,7 +132,7 @@ int MicroBitMemoryMap::updateRegion(Region region)
 void MicroBitMemoryMap::updateFlash(MemoryMapStore *store)
 {
   MicroBitFlash flash;
-  flash.flash_write(store, (uint32_t *)MEMORY_MAP_PAGE, (sizeof(MemoryMapStore) / 4));
+  flash.flash_write((uint32_t *)MEMORY_MAP_PAGE, store, (sizeof(MemoryMapStore) / 4));
 }
 
 /*
