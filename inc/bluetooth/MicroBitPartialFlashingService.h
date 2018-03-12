@@ -76,7 +76,7 @@ class MicroBitPartialFlashingService
     /**
       * Writing to flash inside MicroBitEvent rather than in the ISR
       */
-    void writeEvent(MicroBitEvent e);
+    void partialFlashing(MicroBitEvent e);
 
     // The base address to write to. Bit masked:  (0xFFFF0000 & region.endAddress) >> 16
     uint8_t baseAddress = 0x3;

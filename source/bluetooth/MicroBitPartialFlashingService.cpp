@@ -35,7 +35,11 @@ DEALINGS IN THE SOFTWARE.
 // BLE PF Control Codes
 #define REGION_INFO 0x00
 #define FLASH_DATA  0x01
-#define END_OF_TRANSMISSION 0xFF
+#define END_OF_TRANSMISSION 0x02
+
+// BLE Utilities
+#define MICROBIT_STATUS 0xEE
+#define MICROBIT_RESET  0xFF
 
 // Instance of MBFlash
 MicroBitFlash flash;
@@ -49,6 +53,7 @@ uint8_t blockPacketCount = 0;
 uint32_t block[16];
 uint8_t  blockNum = 0;
 uint16_t offset   = 0;
+uint8_t firstRun = 1;
 
 /**
   * Constructor.
@@ -62,7 +67,7 @@ MicroBitPartialFlashingService::MicroBitPartialFlashingService(BLEDevice &_ble, 
     // Set up partial flashing characteristic
     uint8_t initCharacteristicValue = 0x00;
     GattCharacteristic partialFlashCharacteristic(MicroBitPartialFlashingServiceCharacteristicUUID, &initCharacteristicValue, sizeof(initCharacteristicValue),
-    20, GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_WRITE | GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_WRITE_WITHOUT_RESPONSE | GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_NOTIFY);
+    20, GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_WRITE_WITHOUT_RESPONSE | GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_NOTIFY);
 
     // Set default security requirements
     partialFlashCharacteristic.requireSecurity(SecurityManager::MICROBIT_BLE_SECURITY_LEVEL);
@@ -77,7 +82,7 @@ MicroBitPartialFlashingService::MicroBitPartialFlashingService(BLEDevice &_ble, 
     ble.gattServer().onDataWritten(this, &MicroBitPartialFlashingService::onDataWritten);
 
     // Set up listener for SD writing
-    messageBus.listen(MICROBIT_ID_PFLASH_NOTIFICATION, MICROBIT_EVT_ANY, this, &MicroBitPartialFlashingService::writeEvent);
+    messageBus.listen(MICROBIT_ID_PFLASH_NOTIFICATION, MICROBIT_EVT_ANY, this, &MicroBitPartialFlashingService::partialFlashingEvent);
 
     // Set up Memory map
     // This will create the Memory Map and store it in flash
@@ -145,8 +150,33 @@ void MicroBitPartialFlashingService::onDataWritten(const GattWriteCallbackParams
            * - Write final packet
            * The END_OF_TRANSMISSION packet contains no data. Write any data left in the buffer.
            */
-           MicroBitEvent evt(MICROBIT_ID_PFLASH_NOTIFICATION, END_OF_TRANSMISSION ,CREATE_AND_FIRE);
+           MicroBitEvent evt(MICROBIT_ID_PFLASH_NOTIFICATION, END_OF_TRANSMISSION ,CREATE_AND_FIRE);          break;
+        }
+        case MICROBIT_STATUS:
+        {
+          /*
+           * Return the version of the Partial Flashing Service and the current BLE mode (application / pairing)
+           */
+          uint8_t flashNotificationBuffer[] = {MICROBIT_STATUS, PARTIAL_FLASHING_VERSION, MicroBitBLEManager::manager->getBLEMode};
+          ble.gattServer().notify(partialFlashCharacteristicHandle, (const uint8_t *)flashNotificationBuffer, sizeof(flashNotificationBuffer));
           break;
+        }
+        case MICROBIT_RESET:
+        {
+          /*
+           * data[1] determines which mode to reset into: MICROBIT_BLE_MODE_PAIRING or MICROBIT_BLE_MODE_APPLICATION
+           */
+           switch(data[1]) {
+             case MICROBIT_BLE_MODE_PAIRING:
+             {
+               MicroBitEvent evt(MICROBIT_ID_PFLASH_NOTIFICATION, MICROBIT_RESET ,CREATE_AND_FIRE);
+             }
+             case MICROBIT_BLE_MODE_APPLICATION:
+             {
+               microbit_reset();
+             }
+             break;
+           }
         }
     }
   }
@@ -162,15 +192,15 @@ void MicroBitPartialFlashingService::flashData(uint8_t *data)
 {
         // Receive 16 bytes per packet
         // Buffer 8 packets - 32 uint32_t // 128 bytes per block
-        // When buffer is full trigger writeEvent
+        // When buffer is full trigger partialFlashingEvent
         // When write is complete notify app and repeat
-        // +-----------+----------+---------+---------+
-        // | 1 Byte    | 16 Bytes | 2 Bytes | 1 Byte  |
-        // +-----------+----------+---------+---------+
-        // | COMMAND   | DATA     | OFFSET  | PACKET# |
-        // +-----------+----------+---------+---------+
+        // +-----------+---------+---------+----------+
+        // | 1 Byte    | 2 Bytes | 1 Byte  | 16 Bytes |
+        // +-----------+---------+---------+----------+
+        // | COMMAND   | OFFSET  | PACKET# | DATA     |
+        // +-----------+---------+---------+----------+
 
-        packetNum = data[19];
+        packetNum = data[3];
         /**
           * Packets with packet num < packet count
           * Ignore as part of retransmitted block
@@ -194,14 +224,14 @@ void MicroBitPartialFlashingService::flashData(uint8_t *data)
 
         // Add to block
         for(int x = 0; x < 4; x++)
-            block[(4*blockNum) + x] = data[(4*x) + 1] | data[(4*x) + 2] << 8 | data[(4*x) + 3] << 16 | data[(4*x) + 4] << 24;
+            block[(4*blockNum) + x] = data[(4*x) + 4] | data[(4*x) + 5] << 8 | data[(4*x) + 6] << 16 | data[(4*x) + 7] << 24;
 
         // Actions
         switch(blockNum) {
             // blockNum is 0, set up offset
             case 0:
                 {
-                    offset = ((data[17] << 8) | data[18]);
+                    offset = ((data[1] << 8) | data[2]);
                     blockPacketCount = packetNum;
                     blockNum++;
                     break;
@@ -210,7 +240,7 @@ void MicroBitPartialFlashingService::flashData(uint8_t *data)
             case 3:
                 {
                     // Fire write event
-                    MicroBitEvent evt(MICROBIT_ID_PFLASH_NOTIFICATION, 0 ,CREATE_AND_FIRE);
+                    MicroBitEvent evt(MICROBIT_ID_PFLASH_NOTIFICATION, FLASH_DATA ,CREATE_AND_FIRE);
                     // Reset blockNum
                     blockNum = 0;
                     break;
@@ -228,46 +258,60 @@ void MicroBitPartialFlashingService::flashData(uint8_t *data)
   * Write Event
   * Used the write data to the flash outside of the BLE ISR
   */
-void MicroBitPartialFlashingService::writeEvent(MicroBitEvent e)
+void MicroBitPartialFlashingService::partialFlashingEvent(MicroBitEvent e)
 {
-    /*
-     * Set BLE Mode flag if not already set to boot into BLE mode
-     * upon a failed flash.
-     */
-     MicroBitStorage storage;
-     KeyValuePair* BLEMode = storage.get("BLEMode");
-     if(BLEMode == NULL){
-       uint8_t BLEMode = 0x01;
-       storage.put("BLEMode", &BLEMode, sizeof(BLEMode));
-     }
-     delete BLEMode, storage;
-
-
-    // Flash Pointer
-    uint32_t *flashPointer   = (uint32_t *) ((baseAddress << 16) + offset);
-
-    // If the pointer is on a page boundary erase the page
-    if(!((uint32_t)flashPointer % 0x400))
-        flash.erase_page(flashPointer);
-
-    // Create a pointer to the data block
-    uint32_t *blockPointer;
-    blockPointer = block;
-
-    // Write to flash
-    flash.flash_burn(flashPointer, blockPointer, 16);
-
-    // Update flash control buffer to send next packet
-    uint8_t flashNotificationBuffer[] = {FLASH_DATA, 0xFF};
-    ble.gattServer().notify(partialFlashCharacteristicHandle, (const uint8_t *)flashNotificationBuffer, sizeof(flashNotificationBuffer));
-
-    // Once the final packet has been written remove the BLE mode flag and reset
-    // the micro:bit
-    if(e.value == END_OF_TRANSMISSION)
+  switch(e.value){
+    case FLASH_DATA:
     {
-      storage.remove("BLEMode");
-      microbit_reset();
+      /*
+       * Set BLE Mode flag if not already set to boot into BLE mode
+       * upon a failed flash.
+       */
+       if(firstRun){
+         MicroBitStorage storage;
+         KeyValuePair* BLEMode = storage.get("BLEMode");
+         if(BLEMode == NULL){
+           uint8_t BLEMode = 0x01;
+           storage.put("BLEMode", &BLEMode, sizeof(BLEMode));
+         }
+         delete BLEMode, storage;
+         firstRun = 0;
+       }
+
+
+      // Flash Pointer
+      uint32_t *flashPointer   = (uint32_t *) ((baseAddress << 16) + offset);
+
+      // If the pointer is on a page boundary erase the page
+      if(!((uint32_t)flashPointer % 0x400))
+          flash.erase_page(flashPointer);
+
+      // Create a pointer to the data block
+      uint32_t *blockPointer;
+      blockPointer = block;
+
+      // Write to flash
+      flash.flash_burn(flashPointer, blockPointer, 16);
+
+      // Update flash control buffer to send next packet
+      uint8_t flashNotificationBuffer[] = {FLASH_DATA, 0xFF};
+      ble.gattServer().notify(partialFlashCharacteristicHandle, (const uint8_t *)flashNotificationBuffer, sizeof(flashNotificationBuffer));
+
+      // Once the final packet has been written remove the BLE mode flag and reset
+      // the micro:bit
+      if(e.value == END_OF_TRANSMISSION)
+      {
+        storage.remove("BLEMode");
+        microbit_reset();
+      }
+      break;
     }
+    case MICROBIT_RESET:
+    {
+      MicroBitBLEManager::manager->restartInBLEMode();
+      break;
+    }
+  }
 
 }
 

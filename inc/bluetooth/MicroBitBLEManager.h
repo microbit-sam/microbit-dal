@@ -79,6 +79,9 @@ DEALINGS IN THE SOFTWARE.
 #define MICROBIT_BLE_STATUS_STORE_SYSATTR       0x02
 #define MICROBIT_BLE_STATUS_DISCONNECT          0x04
 
+#define MICROBIT_BLE_MODE_PAIRING     0x00
+#define MICROBIT_BLE_MODE_APPLICATION 0x01
+
 extern const int8_t MICROBIT_BLE_POWER_LEVEL[];
 
 struct BLESysAttribute
@@ -282,6 +285,19 @@ class MicroBitBLEManager : MicroBitComponent
     int advertiseEddystoneUid(const char* uid_namespace, const char* uid_instance, int8_t calibratedPower = MICROBIT_BLE_EDDYSTONE_DEFAULT_POWER, bool connectable = true, uint16_t interval = MICROBIT_BLE_EDDYSTONE_ADV_INTERVAL);
 #endif
 
+  /**
+   * Restarts in BLE Mode
+   *
+   */
+   void MicroBitBLEManager::restartInBLEMode();
+
+   /**
+    * Get current BLE mode; application, pairing
+    * #define MICROBIT_BLE_MODE_PAIRING     0x00
+    * #define MICROBIT_BLE_MODE_APPLICATION 0x01
+    */
+    int getBLEMode();
+
   private:
     /**
 	* Displays the device's ID code as a histogram on the provided MicroBitDisplay instance.
@@ -304,6 +320,7 @@ class MicroBitBLEManager : MicroBitComponent
     int pairingStatus;
     ManagedString passKey;
     ManagedString deviceName;
+    uint8_t bleMode = MICROBIT_BLE_MODE_APPLICATION;
 };
 
 #endif

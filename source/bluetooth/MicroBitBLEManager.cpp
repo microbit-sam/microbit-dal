@@ -648,6 +648,8 @@ void MicroBitBLEManager::pairingMode(MicroBitDisplay &display, MicroBitButton &a
     int brightness = 255;
     int fadeDirection = 0;
 
+    bleMode = MICROBIT_BLE_MODE_PAIRING;
+
     ble->gap().stopAdvertising();
 
 // Clear the whitelist (if we have one), so that we're discoverable by all BLE devices.
@@ -780,15 +782,15 @@ void MicroBitBLEManager::showManagementModeAnimation(MicroBitDisplay &display)
     // Animation for display object
     // https://makecode.microbit.org/93264-81126-90471-58367
 
-    const int mgmt_animation_w = 60;
+    const int mgmt_animation_w = 35;
     const int mgmt_animation_h = 5;
     const uint8_t mgmt_animation[] =
     {
-         1,0,0,0,0, 1,1,0,0,0, 1,1,1,0,0, 1,1,1,1,0, 1,1,1,1,1, 1,1,1,1,1, 1,1,1,1,1, 1,1,1,1,1, 1,1,1,1,1, 1,1,1,1,1, 1,1,0,1,1, 1,0,0,0,1,
-         0,0,0,0,0, 1,0,0,0,0, 1,1,0,0,0, 1,1,1,0,1, 1,1,1,1,1, 1,1,1,1,1, 1,1,1,1,1, 1,1,1,1,1, 1,1,1,1,1, 1,1,0,1,1, 1,0,0,0,1, 0,0,0,0,0,
-         0,0,0,0,0, 0,0,0,0,0, 1,0,0,0,1, 1,1,0,1,1, 1,1,1,1,1, 1,1,0,1,1, 1,1,1,1,1, 1,1,0,1,1, 1,1,1,1,1, 1,0,0,0,1, 0,0,0,0,0, 0,0,0,0,0,
-         0,0,0,0,0, 0,0,0,0,1, 0,0,0,1,1, 1,0,1,1,1, 1,1,1,1,1, 1,1,1,1,1, 1,1,1,1,1, 1,1,1,1,1, 1,1,1,1,1, 1,1,0,1,1, 1,0,0,0,1, 0,0,0,0,0,
-         0,0,0,0,1, 0,0,0,1,1, 0,0,1,1,1, 0,1,1,1,1, 1,1,1,1,1, 1,1,1,1,1, 1,1,1,1,1, 1,1,1,1,1, 1,1,1,1,1, 1,1,1,1,1, 1,1,0,1,1, 1,0,0,0,1
+         1,1,1,1,1, 1,1,1,1,1, 1,1,1,1,1, 1,1,1,1,1, 1,1,1,1,1, 1,1,0,1,1, 1,0,0,0,1,
+         1,1,1,1,1, 1,1,1,1,1, 1,1,1,1,1, 1,1,1,1,1, 1,1,0,1,1, 1,0,0,0,1, 0,0,0,0,0,
+         1,1,0,1,1, 1,1,1,1,1, 1,1,0,1,1, 1,1,1,1,1, 1,0,0,0,1, 0,0,0,0,0, 0,0,0,0,0,
+         1,1,1,1,1, 1,1,1,1,1, 1,1,1,1,1, 1,1,1,1,1, 1,1,0,1,1, 1,0,0,0,1, 0,0,0,0,0,
+         1,1,1,1,1, 1,1,1,1,1, 1,1,1,1,1, 1,1,1,1,1, 1,1,1,1,1, 1,1,0,1,1, 1,0,0,0,1
     };
 
     MicroBitImage mgmt(mgmt_animation_w,mgmt_animation_h,mgmt_animation);
@@ -838,4 +840,25 @@ void MicroBitBLEManager::showNameHistogram(MicroBitDisplay &display)
         for (int j = 0; j < h + 1; j++)
             display.image.setPixelValue(MICROBIT_DFU_HISTOGRAM_WIDTH - i - 1, MICROBIT_DFU_HISTOGRAM_HEIGHT - j - 1, 255);
     }
+}
+
+/**
+ * Restarts in BLE Mode
+ *
+ */
+ void MicroBitBLEManager::restartInBLEMode(){
+   KeyValuePair* BLEMode = storage.get("BLEMode");
+   if(BLEMode == NULL){
+     uint8_t BLEMode = 0x01;
+     storage.put("BLEMode", &BLEMode, sizeof(BLEMode));
+   }
+   delete BLEMode, storage;
+   microbit_reset();
+ }
+
+ /**
+  * Get BLE mode. Returns the current mode: application, pairing mode
+  */
+uint8_t MicroBitBLEManager::getBLEMode(){
+  return bleMode;
 }
