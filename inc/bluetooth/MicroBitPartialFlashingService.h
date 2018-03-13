@@ -39,6 +39,8 @@ DEALINGS IN THE SOFTWARE.
 #include "MicroBitListener.h"
 #include "EventModel.h"
 
+#define PARTIAL_FLASHING_VERSION 0x01
+
 // UUIDs for our service and characteristics
 extern const uint8_t  MicroBitPartialFlashingServiceUUID[];
 extern const uint8_t  MicroBitPartialFlashingServiceCharacteristicUUID[];
@@ -76,7 +78,7 @@ class MicroBitPartialFlashingService
     /**
       * Writing to flash inside MicroBitEvent rather than in the ISR
       */
-    void partialFlashing(MicroBitEvent e);
+    void partialFlashingEvent(MicroBitEvent e);
 
     // The base address to write to. Bit masked:  (0xFFFF0000 & region.endAddress) >> 16
     uint8_t baseAddress = 0x3;

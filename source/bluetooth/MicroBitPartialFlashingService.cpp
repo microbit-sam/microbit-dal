@@ -157,7 +157,7 @@ void MicroBitPartialFlashingService::onDataWritten(const GattWriteCallbackParams
           /*
            * Return the version of the Partial Flashing Service and the current BLE mode (application / pairing)
            */
-          uint8_t flashNotificationBuffer[] = {MICROBIT_STATUS, PARTIAL_FLASHING_VERSION, MicroBitBLEManager::manager->getBLEMode};
+          uint8_t flashNotificationBuffer[] = {MICROBIT_STATUS, PARTIAL_FLASHING_VERSION, MicroBitBLEManager::manager->getBLEMode()};
           ble.gattServer().notify(partialFlashCharacteristicHandle, (const uint8_t *)flashNotificationBuffer, sizeof(flashNotificationBuffer));
           break;
         }
@@ -301,6 +301,7 @@ void MicroBitPartialFlashingService::partialFlashingEvent(MicroBitEvent e)
       // the micro:bit
       if(e.value == END_OF_TRANSMISSION)
       {
+        MicroBitStorage storage;
         storage.remove("BLEMode");
         microbit_reset();
       }

@@ -289,14 +289,14 @@ class MicroBitBLEManager : MicroBitComponent
    * Restarts in BLE Mode
    *
    */
-   void MicroBitBLEManager::restartInBLEMode();
+   void restartInBLEMode();
 
    /**
     * Get current BLE mode; application, pairing
     * #define MICROBIT_BLE_MODE_PAIRING     0x00
     * #define MICROBIT_BLE_MODE_APPLICATION 0x01
     */
-    int getBLEMode();
+    uint8_t getBLEMode();
 
   private:
     /**

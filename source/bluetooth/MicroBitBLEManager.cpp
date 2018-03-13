@@ -847,10 +847,10 @@ void MicroBitBLEManager::showNameHistogram(MicroBitDisplay &display)
  *
  */
  void MicroBitBLEManager::restartInBLEMode(){
-   KeyValuePair* BLEMode = storage.get("BLEMode");
+   KeyValuePair* BLEMode = storage->get("BLEMode");
    if(BLEMode == NULL){
      uint8_t BLEMode = 0x01;
-     storage.put("BLEMode", &BLEMode, sizeof(BLEMode));
+     storage->put("BLEMode", &BLEMode, sizeof(BLEMode));
    }
    delete BLEMode, storage;
    microbit_reset();
