@@ -34,6 +34,7 @@ DEALINGS IN THE SOFTWARE.
 #include "MicroBitConfig.h"
 #include "MicroBitMemoryMap.h"
 #include "MicroBitFlash.h"
+#include "MicroBitSerial.h"
 
 /**
   * Default constructor.
@@ -49,8 +50,8 @@ MicroBitMemoryMap::MicroBitMemoryMap()
 
     // If we haven't used flash before, we need to configure it
     // Rebuild map everytime
-    if(memoryMapStore.magic != MICROBIT_MEMORY_MAP_MAGIC)
-    {
+    //if(memoryMapStore.magic != MICROBIT_MEMORY_MAP_MAGIC )
+    //{
 
         // SD
         pushRegion(Region(0x00, 0x00, 0x18000, 0x00));  // Soft Device
@@ -63,16 +64,16 @@ MicroBitMemoryMap::MicroBitMemoryMap()
         // padding to next page = 0x400 - (FLASH_PROGRAM_END % 0x400);
         pushRegion(Region(0x02, FLASH_PROGRAM_END + (0x400 - (FLASH_PROGRAM_END % 0x400)), 0x3BBFF, 0x00)); // micro:bit PXT
 
-        // Find Hashes if PXT Built Program
-        findHashes();
-
         // Update Magic
         memoryMapStore.magic = MICROBIT_MEMORY_MAP_MAGIC;
 
+        // Find Hashes if PXT Built Program
+        findHashes();
+        
         // Update Flash
-        updateFlash(&memoryMapStore);
+        //updateFlash(&memoryMapStore);
 
-    }
+    //}
 
 }
 
@@ -192,5 +193,23 @@ void MicroBitMemoryMap::findHashes()
         }
 
     }
+
+    // If not found set default values
+    memoryMapStore.memoryMap[1].hash[0] = 0xDD;
+    memoryMapStore.memoryMap[1].hash[1] = 0xDD;
+    memoryMapStore.memoryMap[1].hash[2] = 0xDD;
+    memoryMapStore.memoryMap[1].hash[3] = 0xDD;
+    memoryMapStore.memoryMap[1].hash[4] = 0xDD;
+    memoryMapStore.memoryMap[1].hash[5] = 0xDD;
+    memoryMapStore.memoryMap[1].hash[6] = 0xDD;
+    memoryMapStore.memoryMap[1].hash[7] = 0xDD;
+    memoryMapStore.memoryMap[2].hash[0] = 0xDD;
+    memoryMapStore.memoryMap[2].hash[1] = 0xDD;
+    memoryMapStore.memoryMap[2].hash[2] = 0xDD;
+    memoryMapStore.memoryMap[2].hash[3] = 0xDD;
+    memoryMapStore.memoryMap[2].hash[4] = 0xDD;
+    memoryMapStore.memoryMap[2].hash[5] = 0xDD;
+    memoryMapStore.memoryMap[2].hash[6] = 0xDD;
+    memoryMapStore.memoryMap[2].hash[7] = 0xDD;
 
 }
