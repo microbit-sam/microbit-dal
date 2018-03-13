@@ -49,7 +49,7 @@ MicroBitMemoryMap::MicroBitMemoryMap()
 
     // If we haven't used flash before, we need to configure it
     // Rebuild map everytime
-    if(memoryMapStore.magic != MICROBIT_MEMORY_MAP_MAGIC)
+    if(memoryMapStore.magic != MICROBIT_MEMORY_MAP_MAGIC || 1)
     {
 
         // SD
