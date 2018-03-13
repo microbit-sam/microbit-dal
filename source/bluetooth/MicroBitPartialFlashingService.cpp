@@ -131,7 +131,7 @@ void MicroBitPartialFlashingService::onDataWritten(const GattWriteCallbackParams
               buffer[10+i] = memoryMap.memoryMapStore.memoryMap[data[1]].hash[i];
 
           // Send BLE Notification
-          ble.gattServer().notify(partialFlashCharacteristicHandle, (const uint8_t *)buffer, sizeof(buffer));
+          ble.gattServer().notify(partialFlashCharacteristicHandle, (const uint8_t *)buffer, 18);
 
           // Set offset for writing
           baseAddress = (memoryMap.memoryMapStore.memoryMap[data[1]].startAddress & 0xFFFF0000) >> 16; // Offsets are 16 bit

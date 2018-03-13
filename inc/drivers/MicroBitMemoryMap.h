@@ -31,7 +31,7 @@ DEALINGS IN THE SOFTWARE.
 #include "ManagedString.h"
 #include "ErrorNo.h"
 
-#define MICROBIT_MEMORY_MAP_MAGIC       0xCA6E
+#define MICROBIT_MEMORY_MAP_MAGIC       0xCA8E
 
 #define NUMBER_OF_REGIONS 3
 
@@ -56,7 +56,7 @@ class MicroBitMemoryMap
             this->regionId = regionId;
             this->startAddress = startAddress;
             this->endAddress = endAddress;
-            memcpy( this->hash, &hash, sizeof(hash) );
+            memmove( this->hash, &hash, 8 );
         }
 
         Region(){

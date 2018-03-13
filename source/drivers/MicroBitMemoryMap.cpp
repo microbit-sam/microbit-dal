@@ -49,7 +49,7 @@ MicroBitMemoryMap::MicroBitMemoryMap()
 
     // If we haven't used flash before, we need to configure it
     // Rebuild map everytime
-    if(memoryMapStore.magic != MICROBIT_MEMORY_MAP_MAGIC || 1)
+    if(memoryMapStore.magic != MICROBIT_MEMORY_MAP_MAGIC)
     {
 
         // SD
@@ -140,7 +140,6 @@ void MicroBitMemoryMap::updateFlash(MemoryMapStore *store)
  */
 void MicroBitMemoryMap::findHashes()
 {
-
     // Iterate through pages to find magic
     for(int x = 0; x < NRF_FICR->CODESIZE - 1; x++)
     {
