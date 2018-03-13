@@ -63,7 +63,7 @@ class MicroBitMemoryMap
           this->regionId = 0x0;
           this->startAddress = 0x0;
           this->endAddress = 0x0;
-          memset( this->hash, 0x0, 8 );
+          memset( this->hash, 0xDD, 8 );
         }
 
     };

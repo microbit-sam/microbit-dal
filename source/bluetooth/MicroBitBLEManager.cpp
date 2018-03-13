@@ -782,15 +782,15 @@ void MicroBitBLEManager::showManagementModeAnimation(MicroBitDisplay &display)
     // Animation for display object
     // https://makecode.microbit.org/93264-81126-90471-58367
 
-    const int mgmt_animation_w = 35;
+    const int mgmt_animation_w = 15;
     const int mgmt_animation_h = 5;
     const uint8_t mgmt_animation[] =
     {
-         1,1,1,1,1, 1,1,1,1,1, 1,1,1,1,1, 1,1,1,1,1, 1,1,1,1,1, 1,1,0,1,1, 1,0,0,0,1,
-         1,1,1,1,1, 1,1,1,1,1, 1,1,1,1,1, 1,1,1,1,1, 1,1,0,1,1, 1,0,0,0,1, 0,0,0,0,0,
-         1,1,0,1,1, 1,1,1,1,1, 1,1,0,1,1, 1,1,1,1,1, 1,0,0,0,1, 0,0,0,0,0, 0,0,0,0,0,
-         1,1,1,1,1, 1,1,1,1,1, 1,1,1,1,1, 1,1,1,1,1, 1,1,0,1,1, 1,0,0,0,1, 0,0,0,0,0,
-         1,1,1,1,1, 1,1,1,1,1, 1,1,1,1,1, 1,1,1,1,1, 1,1,1,1,1, 1,1,0,1,1, 1,0,0,0,1
+         1,1,1,1,1, 1,1,0,1,1, 1,0,0,0,1,
+         1,1,0,1,1, 1,0,0,0,1, 0,0,0,0,0,
+         1,0,0,0,1, 0,0,0,0,0, 0,0,0,0,0,
+         1,1,0,1,1, 1,0,0,0,1, 0,0,0,0,0,
+         1,1,1,1,1, 1,1,0,1,1, 1,0,0,0,1
     };
 
     MicroBitImage mgmt(mgmt_animation_w,mgmt_animation_h,mgmt_animation);
@@ -808,7 +808,7 @@ void MicroBitBLEManager::showManagementModeAnimation(MicroBitDisplay &display)
     MicroBitImage bt_icon(5,5,bt_icon_raw);
     display.print(bt_icon,0,0,0,0);
 
-    for(int i=0; i < 255; i++){
+    for(int i=0; i < 255; i = i + 5){
         display.setBrightness(i);
         fiber_sleep(5);
     }
