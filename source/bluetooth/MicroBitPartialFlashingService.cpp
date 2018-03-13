@@ -170,13 +170,15 @@ void MicroBitPartialFlashingService::onDataWritten(const GattWriteCallbackParams
              case MICROBIT_BLE_MODE_PAIRING:
              {
                MicroBitEvent evt(MICROBIT_ID_PFLASH_NOTIFICATION, MICROBIT_RESET ,CREATE_AND_FIRE);
+               break;
              }
              case MICROBIT_BLE_MODE_APPLICATION:
              {
                microbit_reset();
+               break;
              }
-             break;
            }
+           break;
         }
     }
   }
@@ -274,7 +276,6 @@ void MicroBitPartialFlashingService::partialFlashingEvent(MicroBitEvent e)
            uint8_t BLEMode = 0x01;
            storage.put("BLEMode", &BLEMode, sizeof(BLEMode));
          }
-         delete BLEMode, storage;
          firstRun = 0;
        }
 
