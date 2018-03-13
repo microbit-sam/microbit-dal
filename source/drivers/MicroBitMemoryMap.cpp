@@ -142,7 +142,7 @@ void MicroBitMemoryMap::findHashes()
 {
 
     // Iterate through pages to find magic
-    for(uint16_t x = 0; x < NRF_FICR->CODESIZE - 1; x++)
+    for(int x = 0; x < NRF_FICR->CODESIZE - 1; x++)
     {
 
         uint32_t volatile *magicAddress  = (uint32_t *)(0x400 * x);
