@@ -219,7 +219,7 @@ void MicroBitPartialFlashingService::flashData(uint8_t *data)
         {
             uint8_t flashNotificationBuffer[] = {FLASH_DATA, 0xAA};
             ble.gattServer().notify(partialFlashCharacteristicHandle, (const uint8_t *)flashNotificationBuffer, sizeof(flashNotificationBuffer));
-            packetCount = blockPacketCount + 4;
+            packetCount = blockPacketCount + 3;
             blockNum = 0;
             return;
         }
@@ -297,15 +297,22 @@ void MicroBitPartialFlashingService::partialFlashingEvent(MicroBitEvent e)
       // Update flash control buffer to send next packet
       uint8_t flashNotificationBuffer[] = {FLASH_DATA, 0xFF};
       ble.gattServer().notify(partialFlashCharacteristicHandle, (const uint8_t *)flashNotificationBuffer, sizeof(flashNotificationBuffer));
+      break;
+    }
+    case END_OF_TRANSMISSION:
+    {
+      // Write one more packet over the next block: if source embed magic was not previously erased, it will be now!
+      uint32_t *blockPointer;
+      uint32_t *flashPointer   = (uint32_t *) ((baseAddress << 16) + offset + 0x40);
+
+      blockPointer = block;
+      flash.flash_burn(flashPointer, blockPointer, 16);
 
       // Once the final packet has been written remove the BLE mode flag and reset
       // the micro:bit
-      if(e.value == END_OF_TRANSMISSION)
-      {
         MicroBitStorage storage;
         storage.remove("BLEMode");
         microbit_reset();
-      }
       break;
     }
     case MICROBIT_RESET:
