@@ -680,12 +680,12 @@ void MicroBitBLEManager::pairingMode(MicroBitDisplay &display, MicroBitButton &a
     // Replaced by animation TODO remove
     //display.scroll(msg);
 
+    fiber_add_idle_component(this);
+
     showManagementModeAnimation(display);
 
     // Display our name, visualised as a histogram in the display to aid identification.
     showNameHistogram(display);
-
-    fiber_add_idle_component(this);
 
     while (1)
     {
@@ -782,15 +782,15 @@ void MicroBitBLEManager::showManagementModeAnimation(MicroBitDisplay &display)
     // Animation for display object
     // https://makecode.microbit.org/93264-81126-90471-58367
 
-    const int mgmt_animation_w = 15;
+    const int mgmt_animation_w = 20;
     const int mgmt_animation_h = 5;
     const uint8_t mgmt_animation[] =
     {
-         1,1,1,1,1, 1,1,0,1,1, 1,0,0,0,1,
-         1,1,0,1,1, 1,0,0,0,1, 0,0,0,0,0,
-         1,0,0,0,1, 0,0,0,0,0, 0,0,0,0,0,
-         1,1,0,1,1, 1,0,0,0,1, 0,0,0,0,0,
-         1,1,1,1,1, 1,1,0,1,1, 1,0,0,0,1
+         1,1,1,1,1, 1,1,1,1,1, 1,1,0,1,1, 1,0,0,0,1,
+         1,1,1,1,1, 1,1,0,1,1, 1,0,0,0,1, 0,0,0,0,0,
+         1,1,0,1,1, 1,0,0,0,1, 0,0,0,0,0, 0,0,0,0,0,
+         1,1,1,1,1, 1,1,0,1,1, 1,0,0,0,1, 0,0,0,0,0,
+         1,1,1,1,1, 1,1,1,1,1, 1,1,0,1,1, 1,0,0,0,1
     };
 
     MicroBitImage mgmt(mgmt_animation_w,mgmt_animation_h,mgmt_animation);

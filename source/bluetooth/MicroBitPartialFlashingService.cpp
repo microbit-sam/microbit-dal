@@ -41,20 +41,6 @@ DEALINGS IN THE SOFTWARE.
 #define MICROBIT_STATUS 0xEE
 #define MICROBIT_RESET  0xFF
 
-// Instance of MBFlash
-MicroBitFlash flash;
-
-// Ensure packets are in order
-uint8_t packetNum = 0;
-uint8_t packetCount = 0;
-uint8_t blockPacketCount = 0;
-
-// Keep track of blocks of data
-uint32_t block[16];
-uint8_t  blockNum = 0;
-uint16_t offset   = 0;
-uint8_t firstRun = 1;
-
 /**
   * Constructor.
   * Create a representation of the PartialFlashService
@@ -201,8 +187,7 @@ void MicroBitPartialFlashingService::flashData(uint8_t *data)
         // +-----------+---------+---------+----------+
         // | COMMAND   | OFFSET  | PACKET# | DATA     |
         // +-----------+---------+---------+----------+
-
-        packetNum = data[3];
+        uint8_t packetNum = data[3];
         /**
           * Packets with packet num < packet count
           * Ignore as part of retransmitted block
@@ -262,6 +247,8 @@ void MicroBitPartialFlashingService::flashData(uint8_t *data)
   */
 void MicroBitPartialFlashingService::partialFlashingEvent(MicroBitEvent e)
 {
+  MicroBitFlash flash;
+
   switch(e.value){
     case FLASH_DATA:
     {
@@ -269,14 +256,11 @@ void MicroBitPartialFlashingService::partialFlashingEvent(MicroBitEvent e)
        * Set BLE Mode flag if not already set to boot into BLE mode
        * upon a failed flash.
        */
-       if(firstRun){
-         MicroBitStorage storage;
-         KeyValuePair* BLEMode = storage.get("BLEMode");
-         if(BLEMode == NULL){
-           uint8_t BLEMode = 0x01;
-           storage.put("BLEMode", &BLEMode, sizeof(BLEMode));
-         }
-         firstRun = 0;
+       MicroBitStorage storage;
+       KeyValuePair* BLEMode = storage.get("BLEMode");
+       if(BLEMode == NULL){
+         uint8_t BLEMode = 0x01;
+         storage.put("BLEMode", &BLEMode, sizeof(BLEMode));
        }
 
 
