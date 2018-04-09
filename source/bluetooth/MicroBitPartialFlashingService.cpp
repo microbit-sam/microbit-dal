@@ -121,6 +121,10 @@ void MicroBitPartialFlashingService::onDataWritten(const GattWriteCallbackParams
 
           // Set offset for writing
           baseAddress = (memoryMap.memoryMapStore.memoryMap[data[1]].startAddress & 0xFFFF0000) >> 16; // Offsets are 16 bit
+
+          // Reset packet count
+          packetCount = 0;
+
           break;
         }
         case FLASH_DATA:
@@ -296,6 +300,7 @@ void MicroBitPartialFlashingService::partialFlashingEvent(MicroBitEvent e)
       // the micro:bit
         MicroBitStorage storage;
         storage.remove("BLEMode");
+        delete &storage;
         microbit_reset();
       break;
     }

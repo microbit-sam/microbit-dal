@@ -43,37 +43,20 @@ DEALINGS IN THE SOFTWARE.
   */
 MicroBitMemoryMap::MicroBitMemoryMap()
 {
+      // Assumes PXT Built program
+      // SD
+      pushRegion(Region(0x00, 0x00, 0x18000, 0x00));  // Soft Device
 
-    //read our data!
-    uint32_t *flashPointer = (uint32_t *)MEMORY_MAP_PAGE;
-    memcpy(&memoryMapStore, flashPointer, sizeof(memoryMapStore));
+      // DAL
+      pushRegion(Region(0x01, 0x18000, FLASH_PROGRAM_END, 0x00)); // micro:bit Device Abstractation Layer
 
-    // If we haven't used flash before, we need to configure it
-    // Rebuild map everytime
-    //if(memoryMapStore.magic != MICROBIT_MEMORY_MAP_MAGIC )
-    //{
+      // PXT
+      // PXT will be on the start of the next page
+      // padding to next page = 0x400 - (FLASH_PROGRAM_END % 0x400);
+      pushRegion(Region(0x02, FLASH_PROGRAM_END + (0x400 - (FLASH_PROGRAM_END % 0x400)), 0x3BBFF, 0x00)); // micro:bit PXT
 
-        // SD
-        pushRegion(Region(0x00, 0x00, 0x18000, 0x00));  // Soft Device
-
-        // DAL
-        pushRegion(Region(0x01, 0x18000, FLASH_PROGRAM_END, 0x00)); // micro:bit Device Abstractation Layer
-
-        // PXT
-        // PXT will be on the start of the next page
-        // padding to next page = 0x400 - (FLASH_PROGRAM_END % 0x400);
-        pushRegion(Region(0x02, FLASH_PROGRAM_END + (0x400 - (FLASH_PROGRAM_END % 0x400)), 0x3BBFF, 0x00)); // micro:bit PXT
-
-        // Update Magic
-        memoryMapStore.magic = MICROBIT_MEMORY_MAP_MAGIC;
-
-        // Find Hashes if PXT Built Program
-        findHashes();
-        
-        // Update Flash
-        //updateFlash(&memoryMapStore);
-
-    //}
+      // Find Hashes if PXT Built Program
+      findHashes();
 
 }
 
@@ -193,23 +176,4 @@ void MicroBitMemoryMap::findHashes()
         }
 
     }
-
-    // If not found set default values
-    memoryMapStore.memoryMap[1].hash[0] = 0xDD;
-    memoryMapStore.memoryMap[1].hash[1] = 0xDD;
-    memoryMapStore.memoryMap[1].hash[2] = 0xDD;
-    memoryMapStore.memoryMap[1].hash[3] = 0xDD;
-    memoryMapStore.memoryMap[1].hash[4] = 0xDD;
-    memoryMapStore.memoryMap[1].hash[5] = 0xDD;
-    memoryMapStore.memoryMap[1].hash[6] = 0xDD;
-    memoryMapStore.memoryMap[1].hash[7] = 0xDD;
-    memoryMapStore.memoryMap[2].hash[0] = 0xDD;
-    memoryMapStore.memoryMap[2].hash[1] = 0xDD;
-    memoryMapStore.memoryMap[2].hash[2] = 0xDD;
-    memoryMapStore.memoryMap[2].hash[3] = 0xDD;
-    memoryMapStore.memoryMap[2].hash[4] = 0xDD;
-    memoryMapStore.memoryMap[2].hash[5] = 0xDD;
-    memoryMapStore.memoryMap[2].hash[6] = 0xDD;
-    memoryMapStore.memoryMap[2].hash[7] = 0xDD;
-
 }

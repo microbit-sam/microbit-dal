@@ -70,7 +70,6 @@ class MicroBitMemoryMap
 
     struct MemoryMapStore
     {
-        uint32_t magic;
         Region memoryMap[3];
     };
 

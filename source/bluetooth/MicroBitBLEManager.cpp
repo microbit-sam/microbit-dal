@@ -851,6 +851,7 @@ void MicroBitBLEManager::showNameHistogram(MicroBitDisplay &display)
    if(BLEMode == NULL){
      uint8_t BLEMode = 0x01;
      storage->put("BLEMode", &BLEMode, sizeof(BLEMode));
+     delete &BLEMode;
    }
    microbit_reset();
  }
