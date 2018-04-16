@@ -271,7 +271,7 @@ void MicroBitBLEManager::advertise()
 }
 
 /**
- * A member function used to defer writes to flash, in order to prevent a write collision with 
+ * A member function used to defer writes to flash, in order to prevent a write collision with
  * softdevice.
  * @param handle The handle offered by soft device during pairing.
  * */
@@ -671,14 +671,14 @@ void MicroBitBLEManager::pairingMode(MicroBitDisplay &display, MicroBitButton &a
     ble->gap().setAdvertisingTimeout(0);
     ble->gap().startAdvertising();
 
+    fiber_add_idle_component(this);
+
     // Stop any running animations on the display
     display.stopAnimation();
     display.scroll(msg);
 
     // Display our name, visualised as a histogram in the display to aid identification.
     showNameHistogram(display);
-
-    fiber_add_idle_component(this);
 
     while (1)
     {
