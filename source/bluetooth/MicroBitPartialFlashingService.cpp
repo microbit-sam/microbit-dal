@@ -261,10 +261,10 @@ void MicroBitPartialFlashingService::partialFlashingEvent(MicroBitEvent e)
        * upon a failed flash.
        */
        MicroBitStorage storage;
-       KeyValuePair* BLEMode = storage.get("BLEMode");
-       if(BLEMode == NULL){
-         uint8_t BLEMode = 0x01;
-         storage.put("BLEMode", &BLEMode, sizeof(BLEMode));
+       KeyValuePair* flashIncomplete = storage.get("flashIncomplete");
+       if(flashIncomplete == NULL){
+         uint8_t flashIncomplete = 0x01;
+         storage.put("flashIncomplete", &flashIncomplete, sizeof(flashIncomplete));
        }
 
 
@@ -299,7 +299,7 @@ void MicroBitPartialFlashingService::partialFlashingEvent(MicroBitEvent e)
       // Once the final packet has been written remove the BLE mode flag and reset
       // the micro:bit
         MicroBitStorage storage;
-        storage.remove("BLEMode");
+        storage.remove("flashIncomplete");
         delete &storage;
         microbit_reset();
       break;
