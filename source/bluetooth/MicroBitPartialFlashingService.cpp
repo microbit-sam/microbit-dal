@@ -100,7 +100,7 @@ void MicroBitPartialFlashingService::onDataWritten(const GattWriteCallbackParams
           buffer[9] = (memoryMap.memoryMapStore.memoryMap[data[1]].endAddress & 0x000000FF);
 
           // Region Hash
-          memcpy(&buffer[10], memoryMap.memoryMapStore.memoryMap[data[1]].hash, 8);
+          memcpy(&buffer[10], &memoryMap.memoryMapStore.memoryMap[data[1]].hash, 8);
 
           // Send BLE Notification
           ble.gattServer().notify(partialFlashCharacteristicHandle, (const uint8_t *)buffer, 18);
@@ -217,6 +217,7 @@ void MicroBitPartialFlashingService::flashData(uint8_t *data)
             case 1:
                 {
                     offset |= ((data[1] << 8) | data[2] );
+                    break;
                 }
             // blockNum is 3, block is full
             case 3:
@@ -287,6 +288,26 @@ void MicroBitPartialFlashingService::partialFlashingEvent(MicroBitEvent e)
 
       blockPointer = block;
       flash.flash_burn(flashPointer, blockPointer, 16);
+
+      // Search for and remove embedded source magic (if it exists!)
+      // Move to next page
+      flashPointer = flashPointer + 0x400;
+
+      // Iterate through until reaching the scratch page
+      while(flashPointer < (uint32_t *)DEFAULT_SCRATCH_PAGE)
+      {
+        // Check for embedded source magic
+        if(*flashPointer == 0x41140EF && *(uint32_t *)(flashPointer + 0x1) == 0xB82FA2BB)
+        {
+          // Embedded Source Found!
+          uint8_t blank = 0x00;
+          flash.flash_write(flashPointer, &blank, sizeof(blank));
+        }
+
+        // Next 16 byte alignment
+        flashPointer = flashPointer + 0x2;
+      }
+
 
       // Once the final packet has been written remove the BLE mode flag and reset
       // the micro:bit

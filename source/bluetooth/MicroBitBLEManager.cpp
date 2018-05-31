@@ -844,9 +844,9 @@ void MicroBitBLEManager::showNameHistogram(MicroBitDisplay &display)
  void MicroBitBLEManager::restartInBLEMode(){
    KeyValuePair* RebootMode = storage->get("RebootMode");
    if(RebootMode == NULL){
-     uint8_t RebootMode = MICROBIT_MODE_PAIRING;
-     storage->put("RebootMode", &RebootMode, sizeof(RebootMode));
-     delete &RebootMode;
+     uint8_t RebootModeValue = MICROBIT_MODE_PAIRING;
+     storage->put("RebootMode", &RebootModeValue, sizeof(RebootMode));
+     delete RebootMode;
    }
    microbit_reset();
  }

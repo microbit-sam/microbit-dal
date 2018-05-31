@@ -78,7 +78,7 @@ int MicroBitMemoryMap::pushRegion(Region region)
         // Add data
         memoryMapStore.memoryMap[regionCount].startAddress = region.startAddress;
         memoryMapStore.memoryMap[regionCount].endAddress   = region.endAddress;
-        memcpy(&memoryMapStore.memoryMap[regionCount].hash, &region.hash, 8);
+        //memcpy(&memoryMapStore.memoryMap[regionCount].hash, &region.hash, 8);
         memoryMapStore.memoryMap[regionCount++].regionId     = region.regionId;
         return MICROBIT_OK;
     }
@@ -112,7 +112,7 @@ int MicroBitMemoryMap::updateRegion(Region region)
 void MicroBitMemoryMap::findHashes()
 {
     // Iterate through pages to find magic
-    for(int x = 0; x < NRF_FICR->CODESIZE - 1; x++)
+    for(uint8_t x = 0; x < NRF_FICR->CODESIZE - 1; x++)
     {
 
         uint32_t volatile *magicAddress  = (uint32_t *)(0x400 * x);
@@ -126,38 +126,10 @@ void MicroBitMemoryMap::findHashes()
           ){
                 // If the magic has been found use the hashes follow
                 magicAddress = (uint32_t *)(magicAddress + 0x4);
-                memcpy(memoryMapStore.memoryMap[1].hash, &magicAddress, 8);
-
-                /*
-                memoryMapStore.memoryMap[1].hash[0] = (*magicAddress & 0xFF);
-                memoryMapStore.memoryMap[1].hash[1] = (*magicAddress & 0xFF00)     >>  8;
-                memoryMapStore.memoryMap[1].hash[2] = (*magicAddress & 0xFF0000)   >> 16;
-                memoryMapStore.memoryMap[1].hash[3] = (*magicAddress & 0xFF000000) >> 24;
-
-                magicAddress = (uint32_t *)(magicAddress + 0x1);
-
-                memoryMapStore.memoryMap[1].hash[4] = (*magicAddress & 0xFF);
-                memoryMapStore.memoryMap[1].hash[5] = (*magicAddress & 0xFF00)     >>  8;
-                memoryMapStore.memoryMap[1].hash[6] = (*magicAddress & 0xFF0000)   >> 16;
-                memoryMapStore.memoryMap[1].hash[7] = (*magicAddress & 0xFF000000) >> 24;
-                */
+                memcpy(memoryMapStore.memoryMap[1].hash, (uint8_t *)magicAddress, 8);
 
                 magicAddress = (uint32_t *)(magicAddress + 0x2);
-                memcpy(memoryMapStore.memoryMap[2].hash, &magicAddress, 8);
-
-                /*
-                memoryMapStore.memoryMap[2].hash[0] = (*magicAddress & 0xFF);
-                memoryMapStore.memoryMap[2].hash[1] = (*magicAddress & 0xFF00)     >>  8;
-                memoryMapStore.memoryMap[2].hash[2] = (*magicAddress & 0xFF0000)   >> 16;
-                memoryMapStore.memoryMap[2].hash[3] = (*magicAddress & 0xFF000000) >> 24;
-
-                magicAddress = (uint32_t *)(magicAddress + 0x1);
-
-                memoryMapStore.memoryMap[2].hash[4] = (*magicAddress & 0xFF);
-                memoryMapStore.memoryMap[2].hash[5] = (*magicAddress & 0xFF00)     >>  8;
-                memoryMapStore.memoryMap[2].hash[6] = (*magicAddress & 0xFF0000)   >> 16;
-                memoryMapStore.memoryMap[2].hash[7] = (*magicAddress & 0xFF000000) >> 24;
-                */
+                memcpy(memoryMapStore.memoryMap[2].hash, (uint8_t *)magicAddress, 8);
 
                 return;
 
