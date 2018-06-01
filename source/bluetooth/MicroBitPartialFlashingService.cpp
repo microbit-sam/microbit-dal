@@ -216,7 +216,7 @@ void MicroBitPartialFlashingService::flashData(uint8_t *data)
             // blockNum is 1: complete the offset
             case 1:
                 {
-                    offset |= ((data[1] << 8) | data[2] );
+                    offset |= ((data[1] << 8) | data[2] << 0);
                     blockNum++;
                     break;
                 }
@@ -254,7 +254,6 @@ void MicroBitPartialFlashingService::partialFlashingEvent(MicroBitEvent e)
        * Set flashIncomplete flag if not already set to boot into BLE mode
        * upon a failed flash.
        */
-
        MicroBitStorage storage;
        KeyValuePair* flashIncomplete = storage.get("flashIncomplete");
        if(flashIncomplete == NULL){
@@ -264,7 +263,10 @@ void MicroBitPartialFlashingService::partialFlashingEvent(MicroBitEvent e)
        delete flashIncomplete;
 
       // Flash Pointer
-      uint32_t *flashPointer   = (uint32_t *)offset;
+      uint8_t offsetNotification[4] = {0xFF & (offset >> 24), 0xFF & (offset >> 16), 0xFF & (offset >> 8), 0xFF & (offset >> 0)};
+      ble.gattServer().notify(partialFlashCharacteristicHandle, (const uint8_t *)offsetNotification, 4*sizeof(offsetNotification));
+
+      uint32_t *flashPointer   = (uint32_t *)(offset);
 
       // If the pointer is on a page boundary erase the page
       if(!((uint32_t)flashPointer % 0x400))
