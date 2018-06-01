@@ -201,7 +201,7 @@ void MicroBitPartialFlashingService::flashData(uint8_t *data)
         }
 
         // Add to block
-        memcpy(block + (4*blockNum), data, 16);
+        memcpy(block + (4*blockNum), data + 4, 16);
 
         // Actions
         switch(blockNum) {
@@ -261,10 +261,6 @@ void MicroBitPartialFlashingService::partialFlashingEvent(MicroBitEvent e)
          storage.put("flashIncomplete", &flashIncompleteVal, sizeof(flashIncompleteVal));
        }
        delete flashIncomplete;
-
-      // Flash Pointer
-      uint8_t offsetNotification[4] = {0xFF & (offset >> 24), 0xFF & (offset >> 16), 0xFF & (offset >> 8), 0xFF & (offset >> 0)};
-      ble.gattServer().notify(partialFlashCharacteristicHandle, (const uint8_t *)offsetNotification, 4*sizeof(offsetNotification));
 
       uint32_t *flashPointer   = (uint32_t *)(offset);
 
