@@ -201,7 +201,17 @@ void MicroBitPartialFlashingService::flashData(uint8_t *data)
         }
 
         // Add to block
+        // Something dodgy going on here!
+        // memcpy(block + (blockNum * 16), data + 4, 16);
         memcpy(block + (4*blockNum), data + 4, 16);
+
+
+        /*
+        block[(4*blockNum) + 0] = data[ 4] | data[ 5] << 8 | data[ 6] << 16 | data[ 7] << 24;
+        block[(4*blockNum) + 1] = data[ 8] | data[ 9] << 8 | data[10] << 16 | data[11] << 24;
+        block[(4*blockNum) + 2] = data[12] | data[13] << 8 | data[14] << 16 | data[15] << 24;
+        block[(4*blockNum) + 3] = data[16] | data[17] << 8 | data[18] << 16 | data[19] << 24;
+        */
 
         // Actions
         switch(blockNum) {
