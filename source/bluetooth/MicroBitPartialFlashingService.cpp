@@ -208,7 +208,7 @@ void MicroBitPartialFlashingService::flashData(uint8_t *data)
             // blockNum is 0: set up offset
             case 0:
                 {
-                    offset = ((data[1] << 24) | data[2] << 16);
+                    offset = ((data[1] << 8) | data[2] << 0);
                     blockPacketCount = packetNum;
                     blockNum++;
                     break;
@@ -216,7 +216,7 @@ void MicroBitPartialFlashingService::flashData(uint8_t *data)
             // blockNum is 1: complete the offset
             case 1:
                 {
-                    offset |= ((data[1] << 8) | data[2] << 0);
+                    offset |= ((data[1] << 24) | data[2] << 16);
                     blockNum++;
                     break;
                 }
