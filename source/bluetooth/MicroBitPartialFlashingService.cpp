@@ -201,7 +201,7 @@ void MicroBitPartialFlashingService::flashData(uint8_t *data)
         }
 
         // Add to block
-        memcpy(&block[(4*blockNum)], &data, 16);
+        memcpy(block + (4*blockNum), data, 16);
 
         // Actions
         switch(blockNum) {
