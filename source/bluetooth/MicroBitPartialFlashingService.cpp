@@ -217,6 +217,7 @@ void MicroBitPartialFlashingService::flashData(uint8_t *data)
             case 1:
                 {
                     offset |= ((data[1] << 8) | data[2] );
+                    blockNum++;
                     break;
                 }
             // blockNum is 3, block is full
@@ -234,6 +235,7 @@ void MicroBitPartialFlashingService::flashData(uint8_t *data)
                     break;
                 }
         }
+
 }
 
 
@@ -252,14 +254,14 @@ void MicroBitPartialFlashingService::partialFlashingEvent(MicroBitEvent e)
        * Set flashIncomplete flag if not already set to boot into BLE mode
        * upon a failed flash.
        */
+
        MicroBitStorage storage;
        KeyValuePair* flashIncomplete = storage.get("flashIncomplete");
        if(flashIncomplete == NULL){
-         uint8_t flashIncomplete = 0x01;
-         storage.put("flashIncomplete", &flashIncomplete, sizeof(flashIncomplete));
+         uint8_t flashIncompleteVal = 0x01;
+         storage.put("flashIncomplete", &flashIncompleteVal, sizeof(flashIncompleteVal));
        }
        delete flashIncomplete;
-
 
       // Flash Pointer
       uint32_t *flashPointer   = (uint32_t *)offset;
