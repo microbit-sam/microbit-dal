@@ -113,6 +113,7 @@ void MicroBitPartialFlashingService::onDataWritten(const GattWriteCallbackParams
 
           break;
         }
+#ifdef PARTIAL_FLASHING_SERVICE
         case FLASH_DATA:
         {
           // Process FLASH data packet
@@ -129,6 +130,7 @@ void MicroBitPartialFlashingService::onDataWritten(const GattWriteCallbackParams
            MicroBitEvent evt(MICROBIT_ID_PARTIAL_FLASHING, END_OF_TRANSMISSION);
            break;
         }
+#ifdef
         case MICROBIT_STATUS:
         {
           /*
