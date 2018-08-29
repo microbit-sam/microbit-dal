@@ -113,7 +113,7 @@ void MicroBitPartialFlashingService::onDataWritten(const GattWriteCallbackParams
 
           break;
         }
-#if CONFIG_ENABLED(PARTIAL_FLASHING_SERVICE)
+#if CONFIG_ENABLED(MICROBIT_BLE_PARTIAL_FLASHING)
         case FLASH_DATA:
         {
           // Process FLASH data packet
