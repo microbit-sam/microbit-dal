@@ -130,7 +130,7 @@ void MicroBitPartialFlashingService::onDataWritten(const GattWriteCallbackParams
            MicroBitEvent evt(MICROBIT_ID_PARTIAL_FLASHING, END_OF_TRANSMISSION);
            break;
         }
-#ifdef
+#endif
         case MICROBIT_STATUS:
         {
           /*
@@ -159,6 +159,14 @@ void MicroBitPartialFlashingService::onDataWritten(const GattWriteCallbackParams
            }
            break;
         }
+        default:
+        {
+         /* Return command unknown
+          */
+          uint8_t flashNotificationBuffer[] = {data[0], 0x20, 0x75, 0x6E, 0x6B, 0x6E, 0x6F, 0x77, 0x6E };
+          ble.gattServer().notify(partialFlashCharacteristicHandle, (const uint8_t *)flashNotificationBuffer, sizeof(flashNotificationBuffer));
+          break;
+        }   
     }
   }
 }
