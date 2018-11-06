@@ -129,7 +129,6 @@ static void bleDisconnectionCallback(const Gap::DisconnectionCallbackParams_t *r
 
     if (MicroBitBLEManager::manager)
     {
-        MicroBitBLEManager::manager->advertise();
         MicroBitBLEManager::manager->deferredSysAttrWrite(reason->handle);
     }
 }
@@ -522,6 +521,9 @@ void MicroBitBLEManager::idleTick()
     {
         storeSystemAttributes(pairingHandle);
         this->status &= ~MICROBIT_BLE_STATUS_STORE_SYSATTR;
+        
+        // Once System Attributes have been stored, restart advertising
+        MicroBitBLEManager::manager->advertise();
     }
 }
 
@@ -739,6 +741,14 @@ void MicroBitBLEManager::pairingMode(MicroBitDisplay &display, MicroBitButton &a
         {
             if (pairingStatus & MICROBIT_BLE_PAIR_SUCCESSFUL)
             {
+                // Display while writing 
+                MicroBitImage pause("0,0,0,0,0\n0,0,255,0,0\n0,255,0,255,0\n0,0,255,0,0\n0,0,0,0,0\n");
+                display.print(pause, 0, 0, 0);
+
+                // Wait for pairing info to finish writing
+                while(status == MICROBIT_BLE_STATUS_STORE_SYSATTR)
+                    fiber_sleep(100);
+
                 MicroBitImage tick("0,0,0,0,0\n0,0,0,0,255\n0,0,0,255,0\n255,0,255,0,0\n0,255,0,0,0\n");
                 display.print(tick, 0, 0, 0);
                 fiber_sleep(15000);
